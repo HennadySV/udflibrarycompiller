@@ -1,37 +1,31 @@
-# ---------------------------------------------------------------------
 # Project Variables
-# ---------------------------------------------------------------------
 FB_DIR=/opt/firebird
 FB_INC=$(FB_DIR)/include
-FB_LIB=$(FB_DIR)/lib/libib_util.so
-UDF_SRC=../SRC/FsFBUDF.cpp
+FB_LIB=$(FB_DIR)/lib/libfbclient.so
+UDF_SRC=FsFBUDF.cpp
 UDF_OBJ=FsFBUDF.o
 UDF_OBJ_3=FsFBUDF_3.o
 
-# ---------------------------------------------------------------------
 # Compiler Defines
-# ---------------------------------------------------------------------
-
 CXX=g++
 CXXFLAGS=-fPIC -O -c -w -I$(FB_INC)
-LIB_LINK=ld
-LIB_LINK_FLAGS=-G -Bsymbolic -lgds -lm -lc
+CXXFLAGS_3=
+LIB_LINK_FLAGS=-shared -lfbclient -lm -lc
 
-# ---------------------------------------------------------------------
-# The UDF objects Dialect1
-# ---------------------------------------------------------------------
+# The UDF objects Dialect!
+all: ib_fansy.so ib_fansy_3.so
 
-all: ib_Fansy.so ib_Fansy_3.so
+ib_fansy.so: $(UDF_OBJ)
+	$(CXX) $(LIB_LINK_FLAGS) $(UDF_OBJ) -o $@
 
+ib_fansy_3.so: $(UDF_OBJ_3)
+	$(CXX) $(LIB_LINK_FLAGS) $(UDF_OBJ_3) -o $@
 
-ib_Fansy.so:$(UDF_OBJ)
-	$(LIB_LINK) $(UDF_OBJ) $(FB_LIB) -o $@ $(LIB_LINK_FLAGS)
+$(UDF_OBJ): $(UDF_SRC)
+	$(CXX) $(CXXFLAGS) $(UDF_SRC) -o $@
 
-ib_Fansy_3.so:$(UDF_OBJ_3)
-	$(LIB_LINK) $(UDF_OBJ_3) $(FB_LIB) -o $@ $(LIB_LINK_FLAGS)
+$(UDF_OBJ_3): $(UDF_SRC)
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_3) $(UDF_SRC) -o $@
 
-$(UDF_OBJ):$(UDF_SRC)
-	$(CXX) $< $(CXXFLAGS) -o $@
-
-$(UDF_OBJ_3):$(UDF_SRC)
-	$(CXX) $< $(CXXFLAGS) -DFB_DIALECT3 -o $@
+clean:
+	rm -f *.o *.so
